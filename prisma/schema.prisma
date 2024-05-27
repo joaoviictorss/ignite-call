@@ -8,11 +8,47 @@ datasource db {
 }
 
 model User {
-  id         String   @id @default(uuid())
-  username   String   @unique
-  name       String
-  created_at DateTime @default(now())
+  id        String   @id @default(cuid())
+  username  String   @unique
+  name      String
+  createdAt DateTime @default(now())
+  email     String?  @unique
+  avatarUrl String?
+  updatedAt DateTime @default(now()) @map(name: "updated_at")
+
+  accounts Account[]
+  sessions Session[]
 
   // @@map muda o nome da tabela criada
   @@map("users")
+}
+
+model Account {
+  id                 String    @id @default(cuid())
+  userId             String
+  providerType       String
+  providerId         String
+  providerAccountId  String
+  refreshToken       String?
+  accessToken        String?
+  accessTokenExpires DateTime?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+  user               User      @relation(fields: [userId], references: [id])
+
+  @@unique([providerId, providerAccountId])
+  @@map(name: "accounts")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  userId       String
+  expires      DateTime
+  sessionToken String   @unique
+  accessToken  String?  @unique
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  user         User     @relation(fields: [userId], references: [id])
+
+  @@map(name: "sessions")
 }
